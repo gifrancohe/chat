@@ -43,7 +43,7 @@ Router.post('/messages', function(req, res){
     Storage.getData('messages')
            .then(function(messages){
                 return new Promise(function(resolve, reject){
-                    Storage.saveData('messages', message, messages)
+                    Storage.saveData('messages', message    , messages)
                            .then(function(message) {
                                resolve(message)
                            }).catch(function(err) {
@@ -55,7 +55,7 @@ Router.post('/messages', function(req, res){
 
 module.exports = Router
 
-(function(document, window, undefined, $){
+(function(document, window, undefined, $, io){
     (function(){
         return Chat = {
             apiUrl: '/chat',
@@ -63,11 +63,19 @@ module.exports = Router
             $btnMessage: $('#btnMessage'),
             $messageText: $('#messageText'),
             userName: '',
+            socket: io(),
 
             Init: function() {
                 var self = this
                 this.fetchUserInfo(function (user){
                     self.renderUser(user)
+                })
+                this.watchMessages()
+                self.socket.on('userJoin', function(user){
+                    self.renderUser(user)
+                })
+                self.socket.on('message', function(){
+                    self.renderUser()
                 })
             },
             fetchUserInfo: function(callback){
@@ -77,6 +85,7 @@ module.exports = Router
                 $GuardaInfo,on('click', function(){
                     var nombre = $('.nombreUsuario').val()
                     var user = [{nombre: nombre, img: 'p2.png'}]
+                    self.socket.emit('userJoin', user[0])
                     callback(user)
 
                     self.joinUser(user[0])
@@ -138,6 +147,7 @@ module.exports = Router
                                 text: $(this).val()
                             }
                             self.renderMessage(message)
+                            self.socket.emit('message', message)
                             $(this).val('')
                         }else {
                             e.preventDefault()
@@ -151,6 +161,7 @@ module.exports = Router
                             text: $(this).val()
                         }
                         self.renderMessage(message)
+                        self.socket.emit('message', message)
                         self.$messageText.val('')
                     }
                 })
@@ -183,5 +194,6 @@ module.exports = Router
 
             }
         }
-    })
-})
+    })()
+    Chat.Init()
+})(document, window, undefined, jQuery, io)
