@@ -1,8 +1,6 @@
-var express = require('express')
-
-var Storage = require('../Storage')
-
-var Router = express.Router()
+const express = require('express'),
+      Storage = require('../Storage'),
+      Router = express.Router()
 
 
 Router.get('/users', function(req, res){
@@ -23,33 +21,41 @@ Router.get('/messages', function(req, res){
            })
 })
 
-Router.post('/users', function(req, res){
-    var user = req.body.users
+Router.post('/users', (req, res) => {
+    let user = req.body.users
     Storage.getData('users')
-           .then(function(users){
-                return new Promise(function(resolve, reject){
+           .then((users) => {
+                return new Promise((resolve, reject) => {
                     Storage.saveData('users', user, users)
-                           .then(function(message) {
+                           .then((message) => {
                                resolve(message)
-                           }).catch(function(err) {
+                           }).catch((err) => {
                                reject(err)
                            })
                 })
+           }).then((message) => {
+               res.json(message)
+           }).catch((err) => {
+               res.sendStatus(500).json(err)
            })
 })
 
-Router.post('/messages', function(req, res){
-    var message = req.body.message
+Router.post('/messages', (req, res) => {
+    let message = req.body.message
     Storage.getData('messages')
-           .then(function(messages){
-                return new Promise(function(resolve, reject){
+           .then((messages) => {
+                return new Promise((resolve, reject) => {
                     Storage.saveData('messages', message    , messages)
-                           .then(function(message) {
+                           .then((message) => {
                                resolve(message)
-                           }).catch(function(err) {
+                           }).catch((err) => {
                                reject(err)
                            })
                 })
+           }).then((message) => {
+               res.json(message)
+           }).catch((err) => {
+               res.sendStatus(500).json(err)
            })
 })
 
